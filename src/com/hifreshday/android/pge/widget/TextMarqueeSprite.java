@@ -7,13 +7,17 @@ import com.hifreshday.android.pge.engine.options.EngineOptions;
 import com.hifreshday.android.pge.entity.shape.sprite.Sprite;
 import com.hifreshday.android.pge.view.res.IBitmapRes;
 
-public class TextMarqueeSprite extends Sprite {
+public abstract class TextMarqueeSprite extends Sprite {
+	
+	public static final int DEFAULT_WIDTH = 320;
+	public static final int DEFAULT_HEIGHT = 40;
+	public static final int DEFAULT_SPEED = 50;
 
-	private static final int RECT_WIDTH = 320;
-	private static final int RECT_HEIGHT = 40;
+	private int marqueeWidth = DEFAULT_WIDTH;
+	private int marqueeHeight = DEFAULT_HEIGHT;
 
-	private static final int SPEED = 50;
-	private int currentTextPosition = RECT_WIDTH;
+	private int speed = DEFAULT_SPEED;
+	private int currentTextPosition = marqueeWidth;
 	private float buffersecond = 0.0f;
 	private String info;
 	private float stringsize = 0.0f;
@@ -24,11 +28,21 @@ public class TextMarqueeSprite extends Sprite {
 	private int startY;
 	
 	public TextMarqueeSprite(IBitmapRes bitmapRes, int pX, int pY, int width,
-			int height) {
+			int height, int marqueeWidth, int marqueeHeight, int speed) {
 		super(bitmapRes, pX, pY, width, height);
 		setVisible(false);
+		if(marqueeWidth != 0){
+			this.marqueeWidth = marqueeWidth;
+			currentTextPosition = marqueeWidth;
+		}
+		if(marqueeHeight != 0){
+			this.marqueeHeight = marqueeHeight;
+		}
+		if(speed != 0){
+			this.speed = speed;
+		}
 	}
-
+	
 	/**
 	 * 显示跑马灯效果
 	 * @param text  要显示的文字
@@ -43,7 +57,7 @@ public class TextMarqueeSprite extends Sprite {
 		if (!isVisible()) {
 			info = text;
 			stringsize = paint.measureText(info);
-			currentTextPosition = RECT_WIDTH;
+			currentTextPosition = marqueeWidth;
 			setVisible(true);
 		} else {
 			temp = text;
@@ -53,29 +67,29 @@ public class TextMarqueeSprite extends Sprite {
 	@Override
 	protected void onUpdateSelf(float secondsElapsed) {
 		buffersecond += secondsElapsed;
-		if ((buffersecond * SPEED) > 1) {
-			int move = (int) (buffersecond * SPEED);
+		if ((buffersecond * speed) > 1) {
+			int move = (int) (buffersecond * speed);
 			currentTextPosition -= move;
 			if (currentTextPosition + stringsize < 0) {
-				currentTextPosition = RECT_WIDTH;
+				currentTextPosition = marqueeWidth;
 				setVisible(false);
 				buffersecond = 0;
 			}
-			buffersecond = (buffersecond * SPEED - move) / SPEED;
+			buffersecond = (buffersecond * speed - move) / speed;
 		}
 		if (null != temp && !isVisible()) {
 			setVisible(true);
 			info = temp;
 			buffersecond += secondsElapsed;
-			if ((buffersecond * SPEED) > 1) {
-				int move = (int) (buffersecond * SPEED);
+			if ((buffersecond * speed) > 1) {
+				int move = (int) (buffersecond * speed);
 				currentTextPosition -= move;
 				if (currentTextPosition + stringsize < 0) {
-					currentTextPosition = RECT_WIDTH;
+					currentTextPosition = marqueeWidth;
 					setVisible(false);
 					temp = null;
 				}
-				buffersecond = (buffersecond * SPEED - move) / SPEED;
+				buffersecond = (buffersecond * speed - move) / speed;
 			}
 		}
 	}
@@ -88,11 +102,12 @@ public class TextMarqueeSprite extends Sprite {
 						* EngineOptions.getScreenScaleX(),
 				EngineOptions.getOffsetY() + startY
 						* EngineOptions.getScreenScaleY());
-		canvas.clipRect(0, 0, RECT_WIDTH * EngineOptions.getScreenScaleX(),
-				RECT_HEIGHT * EngineOptions.getScreenScaleY());
+		canvas.clipRect(0, 0, marqueeWidth * EngineOptions.getScreenScaleX(),
+				marqueeHeight * EngineOptions.getScreenScaleY());
 		canvas.drawText(info,
 				currentTextPosition * EngineOptions.getScreenScaleX(),
-				20 * EngineOptions.getScreenScaleY(), paint);
+				startY * EngineOptions.getScreenScaleY(), paint);
 		canvas.restore();
 	}
+	
 }
